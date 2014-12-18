@@ -1,0 +1,233 @@
+// global map variable
+                 var map;
+
+                 window.onload = function () {
+                   $('#yelp_table_results').hide();
+                   var default_latitude = 37.7733;
+                   var default_longitude = -122.4367;
+
+                   map = L.map('map').setView([default_latitude, default_longitude], 12);
+
+                   L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+                  }).addTo(map);
+
+                   L.marker([default_latitude, default_longitude]).addTo(map)
+                   .bindPopup('<strong>San Francisco</strong><br>Gormandize Example.')
+                   .openPopup();
+                 };
+
+
+
+                 $("#search_yelp").click(function(){
+
+
+                  // your javascript code
+                  $('#yelp_table_results').toggle();
+                  var auth = {
+                //
+                // Update with your auth tokens.
+                //
+                consumerKey : "<%=YelpCalls.get_yelp_consumer_key%>",
+                consumerSecret : "<%=YelpCalls.get_yelp_consumer_secret%>",
+                accessToken : "<%=YelpCalls.get_yelp_token%>",
+                // This example is a proof of concept, for how to use the Yelp v2 API with javascript.
+                // You wouldn't actually want to expose your access token secret like this in a real application.
+                accessTokenSecret : "<%=YelpCalls.get_yelp_token_secret%>",
+                serviceProvider : {
+                  signatureMethod : "HMAC-SHA1"
+                }
+              };
+
+
+              var terms = $('#yelpsearchterm').val();
+              var near = $('#yelpaddress').val();;
+
+              if(terms == '' || near == ''){
+                // validate terms search
+                $('#yelp_results').html("<h4 class='loading'>Ha! We haven't forgotten to validate the form! Please enter something.</h4>");
+              } else{
+
+                $('#search_yelp').hide();
+                $('#loading-indicator').show();
+                $('#yelp_results').html("<h4 class='loading'>Loading Yelp results...</h4>");
+              }
+
+              var accessor = {
+                consumerSecret : auth.consumerSecret,
+                tokenSecret : auth.accessTokenSecret
+              };
+              parameters = [];
+              parameters.push(['term', terms]);
+              parameters.push(['location', near]);
+              parameters.push(['callback', 'cb']);
+              parameters.push(['oauth_consumer_key', auth.consumerKey]);
+              parameters.push(['oauth_consumer_secret', auth.consumerSecret]);
+              parameters.push(['oauth_token', auth.accessToken]);
+              parameters.push(['oauth_signature_method', 'HMAC-SHA1']);
+
+              var message = {
+                'action' : 'http://api.yelp.com/v2/search',
+                'method' : 'GET',
+                'parameters' : parameters
+              };
+
+              OAuth.setTimestampAndNonce(message);
+              OAuth.SignatureMethod.sign(message, accessor);
+
+              var parameterMap = OAuth.getParameterMap(message.parameters);
+              console.log(parameterMap);
+
+              $.ajax({
+                'url' : message.action,
+                'data' : parameterMap,
+                'cache': true,
+                'dataType' : 'jsonp',
+                'jsonpCallback' : 'cb',
+                'success' : function(data, textStats, XMLHttpRequest) {
+                  console.log(data);
+
+                  // show button again after loading is done
+                  $('#loading-indicator').hide();
+                  $('#search_yelp').toggle();
+
+                  // empty results first
+                  $('#yelp_results').empty();
+                  $('#yelp_image_results').empty();
+
+                  // display top 20 business results
+                  for (var i = 0; i < data.businesses.length; i++) { 
+                    // display restaurant search results
+                    // $('#yelp_table_results').append(data.businesses[i].name +
+                    //   " , ");
+
+              $('#yelp_table_results table > tbody').append('<tr><td>' + data.businesses[i].name + '</td><td>' + '<img src=' +  
+                data.businesses[i].image_url
+                + ' />' + '</td></tr>');
+
+              var first_latitude = data.businesses[0].location.coordinate.latitude;
+              var first_longitude = data.businesses[0].location.coordinate.longitude;
+
+              var new_latitude = data.businesses[i].location.coordinate.latitude;
+              var new_longitude = data.businesses[i].location.coordinate.longitude;
+
+              // set first marker with popup
+              L.marker([first_latitude, first_longitude]).addTo(map)
+              .bindPopup('<strong>' + data.businesses[0].name + '</strong><br>' + data.businesses[0].location.address)
+              .openPopup();
+
+              // make rest of markers
+              L.marker([new_latitude, new_longitude]).addTo(map)
+              .bindPopup('<strong>' + data.businesses[i].name + '</strong><br>' + data.businesses[i].location.address)
+              ;
+
+              
+
+                    // display restaurant image results
+                    $('#yelp_image_results').append('<img src=' +  
+                      data.businesses[i].image_url
+                      + ' />');
+                  }
+
+                  // reload map with first restaurant's coordinates
+                  map.setView(new L.LatLng(first_latitude, first_longitude), 15);
+                  map.panTo(new L.LatLng(first_latitude, first_longitude));
+                }
+
+                
+              });
+
+              // return false to make sure button doesn't submit form
+              return false;
+            });
+$("#search_foursquare").click(function(){
+
+  var auth = {
+                //
+                // Update with your auth tokens.
+                //
+                clientID : "<%=YelpCalls.get_fs_client_id%>",
+                clientSecret : "<%=YelpCalls.get_fs_client_secret%>",
+                // This example is a proof of concept, for how to use the Yelp v2 API with javascript.
+                // You wouldn't actually want to expose your access token secret like this in a real application.
+                apiVersion : "<%=YelpCalls.get_fs_api_version%>",
+                serviceProvider : {
+                  signatureMethod : "HMAC-SHA1"
+                }
+              };
+
+
+              var terms = $('#fssearchterm').val();
+              var near = $('#fsaddress').val();;
+
+              if(terms == '' || near == ''){
+                // validate terms search
+                $('#fs_results').html("<h4 class='loading'>Ha! We haven't forgotten to validate the form! Please enter something.</h4>");
+              } else{
+                // hide button, show loading gif, and wait for results
+                $('#search_foursquare').hide();
+                $('#loading-indicator2').show();
+                $('#fs_results').html("<h4 class='loading'>Loading FourSquare results...</h4>");
+              }
+
+              var accessor = {
+                consumerSecret : auth.consumerSecret,
+                tokenSecret : auth.accessTokenSecret
+              };
+              parameters = [];
+              parameters.push(['query', terms]);
+              parameters.push(['near', near]);
+              parameters.push(['callback', 'cb']);
+              parameters.push(['client_id', auth.clientID]);
+              parameters.push(['client_secret', auth.clientSecret]);
+              parameters.push(['v', auth.apiVersion]);
+              parameters.push(['oauth_signature_method', 'HMAC-SHA1']);
+
+              var message = {
+                'action' : 'https://api.foursquare.com/v2/venues/search',
+                'method' : 'GET',
+                'parameters' : parameters
+              };
+
+              OAuth.setTimestampAndNonce(message);
+              OAuth.SignatureMethod.sign(message, accessor);
+
+              var parameterMap = OAuth.getParameterMap(message.parameters);
+              console.log(parameterMap);
+
+              $.ajax({
+                'url' : message.action,
+                'data' : parameterMap,
+                'cache': true,
+                'dataType' : 'jsonp',
+                'jsonpCallback' : 'cb',
+                'success' : function(data, textStats, XMLHttpRequest) {
+                  console.log(data);
+
+                  // show button again after loading is done
+                  $('#loading-indicator2').hide();
+                  $('#search_foursquare').toggle();
+
+                  // empty results first
+                  $('#fs_results').empty();
+                  $('#fs_image_results').empty();
+
+                  // display top 20 business results
+                  for (var i = 0; i < data.response.venues.length; i++) { 
+                    // display restaurant search results
+                    $('#fs_results').append(data.response.venues[i].name +
+                      " : " + data.response.venues[i].stats.checkinsCount + " , ");
+                    // // display restaurant image results
+                    // $('#fs_image_results').append('<img src=' +  
+                    //   data.venues[i].image_url
+                    //   + ' />');
+}
+
+
+}
+});
+
+
+              // return false to make sure button doesn't submit form
+              return false;
+            });

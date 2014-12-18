@@ -1,0 +1,97 @@
+.navbar {
+  font-family: 'Century Gothic', CenturyGothic, AppleGothic, sans-serif;
+  font-style: normal;
+  font-weight: 400;
+  letter-spacing: 3px;
+  background-color:  orange;
+}
+
+body{
+	font-family: 'Century Gothic', CenturyGothic, AppleGothic, sans-serif;
+  font-style: normal;
+  font-weight: 400;
+}
+
+
+/*
+ * About Us Page
+ */
+
+.img-circle {
+background:#555;
+width: 140px;
+height: 140px;
+}
+
+
+.form-group {
+  padding-bottom: 10px;
+}
+
+.y{
+	color: #C41200;
+}
+
+.fs{
+	color: #F94877;
+}
+
+.get_photos{
+	margin-top: 20px;
+	margin-bottom: 20px;
+}
+
+#map{
+    width: auto;
+    height: 500px;
+}
+
+#yelp_heading{
+	padding-top: 10px;
+}
+
+#fs_heading{
+	padding-top: 10px;
+}
+
+#search_yelp{
+  margin-top: 10px;
+}
+
+#search_foursquare{
+  margin-top: 10px;
+}
+
+#tagline{
+  margin-top: 20px;
+}
+
+#about_header{
+	text-align: center;
+	font-weight: bold;
+	font-size: 300%;
+}
+
+#about_pics{
+	margin-top: 20px;
+	margin-bottom: 20px;
+}
+
+#about_desc{
+	margin-top: 20px;
+	margin-bottom: 20px;
+}
+
+
+#fs_images{
+	margin-top: 20px;
+	margin-bottom: 20px;
+}
+
+#get_photos{
+	margin-top: 20px;
+	margin-bottom: 20px;
+}
+
+
+
